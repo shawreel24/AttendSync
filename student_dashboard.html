@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendSync - Student Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.8rem;
+            color: var(--status-critical);
+            background: rgba(239,68,68,0.1);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .logout-btn:hover {
+            background: rgba(239,68,68,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="dash-navbar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class='bx bx-check-double'></i>
+            </div>
+            <span class="logo-text">AttendSync</span>
+        </div>
+        
+        <nav class="nav-links">
+            <a href="student_dashboard.html" class="nav-link active"><i class='bx bx-grid-alt'></i> Dashboard</a>
+            <a href="#" class="nav-link"><i class='bx bx-check-circle'></i> Attendance</a>
+            <a href="#" class="nav-link"><i class='bx bx-file'></i> Reports</a>
+            <a href="#" class="nav-link"><i class='bx bx-bell'></i> Alerts</a>
+            <a href="student_profile.html" class="nav-link"><i class='bx bx-user'></i> Profile</a>
+        </nav>
+
+        <div class="nav-right">
+            <!-- Simulated switch toggle for mockup layout -->
+            <label style="display:flex; align-items:center; cursor:pointer;">
+                <input type="checkbox" style="width:36px; height:20px; appearance:none; background:#e5e7eb; border-radius:10px; position:relative; outline:none; transition:0.2s;" />
+                <span style="position:absolute; width:16px; height:16px; background:white; border-radius:50%; margin-left:2px; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+            </label>
+
+            <div class="notification-bell">
+                <i class='bx bx-bell'></i>
+                <div class="notification-badge">2</div>
+            </div>
+            <div class="user-profile-nav" style="gap: 1rem;">
+                <div class="user-info-nav" style="align-items: flex-end;">
+                    <span class="user-name" id="user-name-display">Loading...</span>
+                    <span class="user-role" id="user-role-display">Loading...</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Student&background=random" id="user-avatar-display" alt="Profile" class="user-avatar">
+                <a href="logout.php" class="logout-btn" title="Logout">
+                    <i class='bx bx-log-out'></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <!-- Header -->
+        <div class="page-header" style="align-items: center;">
+            <div class="page-title">
+                <h1>Attendance Overview</h1>
+                <p class="page-subtitle" id="page-subtitle-display">Welcome back. Here's your attendance health at a glance.</p>
+            </div>
+            <div class="tabs-container">
+                <button class="tab-btn">This Week</button>
+                <button class="tab-btn">This Month</button>
+                <button class="tab-btn active">Semester</button>
+            </div>
+        </div>
+
+        <!-- Overview Grid -->
+        <div class="overview-grid">
+            <!-- Overall Circular Progress -->
+            <div class="circular-progress-card">
+                <h3>Overall Attendance</h3>
+                <span>Across all subjects</span>
+                
+                <div class="circular-progress">
+                    <div class="circular-progress-inner">
+                        <h2><span id="overall-percentage-display">0</span>%</h2>
+                        <span>Present</span>
+                    </div>
+                </div>
+                
+                <div class="badge-success" id="overall-status-badge" style="margin-bottom: 0.5rem;">
+                    <i class='bx bx-shield-check'></i> Safe Zone
+                </div>
+                <p class="circular-progress-msg" id="overall-msg">Loading attendance stats...</p>
+            </div>
+
+            <!-- Stats & Trends -->
+            <div>
+                <div class="stats-grid">
+                    <div class="summary-card" style="padding: 1.25rem;">
+                        <div class="summary-card-header">
+                            <span>Classes Attended</span>
+                            <i class='bx bx-user-check' style="background:var(--dash-bg); padding:0.4rem; border-radius:6px;"></i>
+                        </div>
+                        <div class="summary-card-value" id="classes-attended-display">0</div>
+                    </div>
+                    
+                    <div class="summary-card" style="padding: 1.25rem;">
+                        <div class="summary-card-header">
+                            <span>Total Classes Held</span>
+                            <i class='bx bx-calendar' style="background:var(--dash-bg); padding:0.4rem; border-radius:6px;"></i>
+                        </div>
+                        <div class="summary-card-value" id="total-held-display">0</div>
+                        <span style="font-size:0.75rem; color:var(--dash-text-muted);" id="classes-missed-display">0 missed</span>
+                    </div>
+
+                    <div class="summary-card" style="padding: 1.25rem;">
+                        <div class="summary-card-header">
+                            <span>Days Present</span>
+                            <i class='bx bx-check-circle' style="background:var(--dash-bg); padding:0.4rem; border-radius:6px;"></i>
+                        </div>
+                        <div class="summary-card-value" id="days-present-display">0</div>
+                    </div>
+                </div>
+
+                <div class="trend-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <h3>Weekly Attendance Trend</h3>
+                            <span>Percentage present per day</span>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--status-safe); background:var(--status-safe-bg); padding:0.3rem 0.6rem; border-radius:4px; font-weight:600; display:flex; align-items:center; gap:0.2rem;">
+                            <i class='bx bx-trending-up'></i> Improving
+                        </div>
+                    </div>
+                    
+                    <div class="trend-graph"></div>
+                    
+                    <div style="position:absolute; bottom:15px; left:0; width:100%; display:flex; justify-content:space-around; padding-left:1.5rem; font-size:0.75rem; color:var(--dash-text-muted);">
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject-wise Breakdown -->
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Subject-wise Breakdown</h2>
+                <span class="section-meta">Track attendance for each enrolled subject</span>
+            </div>
+            <div style="display:flex; gap:1rem;">
+                <button class="filter-selector" style="border:none; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    <i class='bx bx-bell'></i> Low-attendance alerts 
+                    <label style="display:flex; align-items:center; cursor:pointer; margin-left:0.5rem;">
+                        <input type="checkbox" checked style="width:28px; height:16px; appearance:none; background:var(--dash-text-main); border-radius:10px; position:relative; outline:none;" />
+                        <span style="position:absolute; width:12px; height:12px; background:white; border-radius:50%; margin-left:14px; top:2px;"></span>
+                    </label>
+                </button>
+                <button class="filter-selector" style="border:none; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                    All Subjects <i class='bx bx-chevron-down'></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="subject-grid" id="subject-list-container">
+            <!-- Dynamically populated subjects -->
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="alert-banner" id="alert-banner" style="display:none;">
+            <i class='bx bx-error'></i>
+            <span id="alert-banner-text"></span>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', fetchDashboardData);
+
+            async function fetchDashboardData() {
+                try {
+                    const response = await fetch('student_api.php');
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        if (data.message === 'Not authenticated as a student') {
+                            window.location.href = 'login.php';
+                        }
+                        console.error('Error fetching data:', data.message);
+                        return;
+                    }
+
+                    // Populate User info
+                    document.getElementById('user-name-display').textContent = data.user.name;
+                    document.getElementById('user-role-display').textContent = data.user.role_label;
+                    document.getElementById('user-avatar-display').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.user.name) + '&background=random';
+                    
+                    const firstName = data.user.name.split(' ')[0];
+                    document.getElementById('page-subtitle-display').textContent = `Welcome back, ${firstName}. Here's your attendance health at a glance.`;
+
+                    // Populate Summary Stats
+                    const summary = data.summary;
+                    document.getElementById('overall-percentage-display').textContent = summary.overall_percentage;
+                    document.getElementById('classes-attended-display').textContent = summary.classes_attended;
+                    document.getElementById('total-held-display').textContent = summary.total_held;
+                    
+                    const missed = summary.total_held - summary.classes_attended;
+                    document.getElementById('classes-missed-display').textContent = `${missed} missed`;
+                    document.getElementById('days-present-display').textContent = summary.days_present;
+
+                    // Update Overall Badge
+                    const badge = document.getElementById('overall-status-badge');
+                    const msg = document.getElementById('overall-msg');
+                    
+                    if (summary.overall_percentage >= 75) {
+                        badge.className = 'badge-success';
+                        badge.innerHTML = "<i class='bx bx-shield-check'></i> Safe Zone";
+                        msg.innerHTML = "You're above the 75% minimum requirement.<br>Keep it up!";
+                        // Quick update to circular progress color via css variable override on style if we want, but it's okay for now
+                    } else if (summary.overall_percentage >= 65) {
+                        badge.className = 'badge-warning';
+                        badge.innerHTML = "<i class='bx bx-error'></i> Warning";
+                        msg.innerHTML = "You're slipping close to the 75% minimum.<br>Attend your next classes!";
+                    } else {
+                        badge.className = 'badge-critical';
+                        badge.innerHTML = "<i class='bx bx-error-circle'></i> Critical";
+                        msg.innerHTML = "You're below the 75% minimum requirement.<br>Action required!";
+                    }
+
+                    // Populate Subjects
+                    const subjectContainer = document.getElementById('subject-list-container');
+                    subjectContainer.innerHTML = '';
+                    
+                    let criticalSubjects = [];
+
+                    const icons = ['bx-chip', 'bx-math', 'bx-network-chart', 'bx-data', 'bx-server', 'bx-code-alt', 'bx-book'];
+
+                    data.subjects.forEach((subject, index) => {
+                        if (subject.status === 'Critical') {
+                            criticalSubjects.push(subject.subject_name);
+                        }
+
+                        const statusClass = subject.status.toLowerCase();
+                        const icon = icons[index % icons.length];
+
+                        const card = document.createElement('div');
+                        card.className = 'subject-card';
+                        card.innerHTML = `
+                            <div class="subject-card-header">
+                                <div style="display:flex; gap:1rem; align-items:center;">
+                                    <div class="subject-card-icon"><i class='bx ${icon}'></i></div>
+                                    <div class="subject-card-info">
+                                        <h4>${subject.subject_name}</h4>
+                                        <span>${subject.attended} / ${subject.held} classes</span>
+                                    </div>
+                                </div>
+                                <i class='bx bx-star' style="color:var(--dash-text-muted); font-size:1.2rem;"></i>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-header">
+                                    <span class="progress-percentage ${statusClass}">${subject.percentage}%</span>
+                                    <span class="status-badge ${statusClass}">${subject.status}</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill ${statusClass}" style="width: ${subject.percentage}%;"></div>
+                                </div>
+                            </div>
+                        `;
+                        subjectContainer.appendChild(card);
+                    });
+
+                    // Update Alert Banner
+                    const alertBanner = document.getElementById('alert-banner');
+                    if (criticalSubjects.length > 0) {
+                        alertBanner.style.display = 'flex';
+                        const subjectList = criticalSubjects.join(', ');
+                        document.getElementById('alert-banner-text').innerHTML = `<strong>${subjectList}</strong> attendance is critically low (below 75%).`;
+                    } else {
+                        alertBanner.style.display = 'none';
+                    }
+
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                }
+            }
+        </script>
+
+    </main>
+</body>
+</html>

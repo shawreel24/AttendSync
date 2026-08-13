@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendSync - Student Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.8rem;
+            color: var(--status-critical);
+            background: rgba(239,68,68,0.1);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .logout-btn:hover {
+            background: rgba(239,68,68,0.2);
+        }
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-title h2 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.5rem;
+        }
+        .profile-title p {
+            color: var(--text-light);
+            margin: 0;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .detail-item label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+        .detail-item .value {
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 1.05rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .input-wrapper input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #333;
+        }
+        #alert-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--status-safe);
+            border: 1px solid var(--status-safe);
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--status-critical);
+            border: 1px solid var(--status-critical);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="dash-navbar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class='bx bx-check-double'></i>
+            </div>
+            <span class="logo-text">AttendSync</span>
+        </div>
+        
+        <nav class="nav-links">
+            <a href="student_dashboard.html" class="nav-link"><i class='bx bx-grid-alt'></i> Dashboard</a>
+            <a href="#" class="nav-link"><i class='bx bx-check-circle'></i> Attendance</a>
+            <a href="#" class="nav-link"><i class='bx bx-file'></i> Reports</a>
+            <a href="#" class="nav-link"><i class='bx bx-bell'></i> Alerts</a>
+            <a href="student_profile.html" class="nav-link active"><i class='bx bx-user'></i> Profile</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="notification-bell">
+                <i class='bx bx-bell'></i>
+                <div class="notification-badge">2</div>
+            </div>
+            <div class="user-profile-nav" style="gap: 1rem;">
+                <div class="user-info-nav" style="align-items: flex-end;">
+                    <span class="user-name" id="nav-user-name">Loading...</span>
+                    <span class="user-role" id="nav-user-role">Loading...</span>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Student&background=random" id="nav-user-avatar" alt="Profile" class="user-avatar">
+                <a href="logout.php" class="logout-btn" title="Logout">
+                    <i class='bx bx-log-out'></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>My Profile</h1>
+                <p class="page-subtitle">Manage your account details and password.</p>
+            </div>
+        </div>
+
+        <div class="profile-container">
+            <!-- Details Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <img src="" id="profile-avatar" alt="Avatar" class="profile-avatar">
+                    <div class="profile-title">
+                        <h2 id="profile-name">Loading...</h2>
+                        <p id="profile-username">Loading...</p>
+                    </div>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Roll No</label>
+                        <div class="value" id="profile-rollno">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Admission No</label>
+                        <div class="value" id="profile-admno">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Department</label>
+                        <div class="value" id="profile-dept">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <label>Semester</label>
+                        <div class="value" id="profile-sem">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Card -->
+            <div class="profile-card">
+                <h3>Change Password</h3>
+                <p style="color: var(--text-light); margin-bottom: 1.5rem; font-size: 0.9rem;">Update your password to keep your account secure.</p>
+                
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <div class="input-wrapper">
+                            <i class='bx bx-lock-alt input-icon'></i>
+                            <input type="password" id="newPassword" placeholder="Enter new password" required>
+                            <i class='bx bx-show toggle-password' onclick="togglePwd('newPassword', this)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class='bx bx-lock-alt input-icon'></i>
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                            <i class='bx bx-show toggle-password' onclick="togglePwd('confirmPassword', this)"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class='bx bx-check'></i> Update Password
+                    </button>
+                    
+                    <div id="alert-message"></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchProfileData);
+
+        function togglePwd(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconElement.classList.replace('bx-show', 'bx-hide');
+            } else {
+                input.type = 'password';
+                iconElement.classList.replace('bx-hide', 'bx-show');
+            }
+        }
+
+        async function fetchProfileData() {
+            try {
+                const response = await fetch('student_profile_api.php');
+                const data = await response.json();
+
+                if (!data.success) {
+                    window.location.href = 'login.php';
+                    return;
+                }
+
+                const s = data.student;
+                const roleLabel = s.department_name + ' • ' + s.semester_name;
+                const avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(s.student_name) + '&background=random';
+
+                // Update Nav
+                document.getElementById('nav-user-name').textContent = s.student_name;
+                document.getElementById('nav-user-role').textContent = roleLabel;
+                document.getElementById('nav-user-avatar').src = avatarUrl;
+
+                // Update Profile Card
+                document.getElementById('profile-name').textContent = s.student_name;
+                document.getElementById('profile-username').textContent = s.email;
+                document.getElementById('profile-avatar').src = avatarUrl;
+                
+                document.getElementById('profile-rollno').textContent = s.roll_no;
+                document.getElementById('profile-admno').textContent = s.admission_no;
+                document.getElementById('profile-dept').textContent = s.department_name;
+                document.getElementById('profile-sem').textContent = s.semester_name;
+
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+            }
+        }
+
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newPwd = document.getElementById('newPassword').value;
+            const confPwd = document.getElementById('confirmPassword').value;
+            const alertMsg = document.getElementById('alert-message');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (newPwd !== confPwd) {
+                alertMsg.textContent = 'Passwords do not match.';
+                alertMsg.className = 'alert-error';
+                alertMsg.style.display = 'block';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Updating...";
+            alertMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('update_password_api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPassword: newPwd })
+                });
+                const data = await response.json();
+
+                alertMsg.textContent = data.message;
+                alertMsg.style.display = 'block';
+
+                if (data.success) {
+                    alertMsg.className = 'alert-success';
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    alertMsg.className = 'alert-error';
+                }
+            } catch (error) {
+                alertMsg.textContent = 'An error occurred. Please try again.';
+                alertMsg.className = 'alert-error';
+                alertMsg.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = "<i class='bx bx-check'></i> Update Password";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendSync - Teacher Dashboard</title>
+    <meta name="description" content="AttendSync Teacher Dashboard – view scheduled classes, track attendance, and review past records.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* ── Skeleton ─────────────────────────────────────────────────── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-bg) 25%, rgba(255,255,255,0.06) 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 10px;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .sk-card { height: 82px; margin-bottom: 12px; }
+
+        /* ── Toast ────────────────────────────────────────────────────── */
+        #toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: var(--accent); color: #fff;
+            padding: 12px 20px; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 9998; pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ── Loading overlay ──────────────────────────────────────────── */
+        #loadingOverlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.4s;
+        }
+        #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid rgba(255,255,255,0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Greeting pill ────────────────────────────────────────────── */
+        .greeting-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(99,102,241,0.12);
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: 20px; padding: 4px 12px;
+            font-size: 0.8rem; font-weight: 500; color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        /* ── Error banner ─────────────────────────────────────────────── */
+        .error-banner {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171; padding: 16px 20px;
+            border-radius: 12px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* ── Type badge ───────────────────────────────────────────────── */
+        .type-badge {
+            font-size: 0.7rem; font-weight: 600;
+            padding: 2px 8px; border-radius: 10px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+        .type-class     { background: rgba(99,102,241,0.15); color: var(--accent); }
+        .type-practical { background: rgba(245,158,11,0.15);  color: #f59e0b; }
+        .type-break     { background: rgba(107,114,128,0.15); color: #6b7280; }
+        .type-mentoring { background: rgba(16,185,129,0.15);  color: #10b981; }
+        .type-activity  { background: rgba(236,72,153,0.15);  color: #ec4899; }
+
+        /* ── No classes ───────────────────────────────────────────────── */
+        .no-classes {
+            text-align: center; padding: 60px 20px; color: var(--text-muted);
+        }
+        .no-classes i { font-size: 3rem; margin-bottom: 12px; display: block; opacity: 0.35; }
+
+        /* ── Logout btn ───────────────────────────────────────────────── */
+        .logout-btn {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+            color: #f87171; padding: 8px 16px; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem; font-weight: 500;
+            display: flex; align-items: center; gap: 6px;
+            transition: background 0.2s; text-decoration: none;
+        }
+        .logout-btn:hover { background: rgba(239,68,68,0.2); }
+
+        /* ══════════════════════════════════════════════════════════════
+           DATE PICKER WIDGET
+        ══════════════════════════════════════════════════════════════ */
+
+        /* Wrapper sitting next to the greeting */
+        .date-nav-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        /* Prev / Next arrow buttons */
+        .date-nav-btn {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            background: var(--card-bg, rgba(255,255,255,0.04));
+            color: var(--text-color);
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.15rem;
+            transition: background 0.18s, border-color 0.18s, transform 0.12s;
+        }
+        .date-nav-btn:hover:not(:disabled) {
+            background: rgba(99,102,241,0.15);
+            border-color: rgba(99,102,241,0.4);
+            transform: scale(1.07);
+        }
+        .date-nav-btn:disabled {
+            opacity: 0.35; cursor: not-allowed;
+        }
+
+        /* Main date selector pill */
+        .date-selector {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--card-bg, rgba(255,255,255,0.04));
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            border-radius: 10px; padding: 8px 16px;
+            cursor: pointer; font-size: 0.88rem; font-weight: 500;
+            color: var(--text-color);
+            transition: all 0.2s; white-space: nowrap;
+            position: relative;
+        }
+        .date-selector:hover,
+        .date-selector.active {
+            background: rgba(99,102,241,0.12);
+            border-color: rgba(99,102,241,0.4);
+        }
+        .date-selector.is-past {
+            border-color: rgba(245,158,11,0.35);
+            color: #f59e0b;
+        }
+        .date-selector.is-past i { color: #f59e0b; }
+
+        /* "Today" jump badge shown when not on today */
+        .today-badge {
+            display: none;
+            background: var(--accent);
+            color: #fff; border-radius: 6px;
+            padding: 2px 8px; font-size: 0.72rem; font-weight: 700;
+            cursor: pointer; margin-left: 2px;
+            transition: transform 0.15s;
+        }
+        .today-badge:hover { transform: scale(1.08); }
+        .today-badge.visible { display: inline-block; }
+
+        /* Hidden native date input overlaid on the button for native picker */
+        .date-input-hidden {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer;
+            width: 100%; height: 100%;
+            border: none; background: none;
+        }
+        /* Style the native date picker caret to show on some browsers */
+        .date-input-hidden::-webkit-calendar-picker-indicator {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+
+        /* Past-date banner under the header */
+        .past-date-banner {
+            display: none;
+            background: rgba(245,158,11,0.09);
+            border: 1px solid rgba(245,158,11,0.25);
+            color: #fbbf24;
+            padding: 10px 18px; border-radius: 10px;
+            margin-bottom: 18px;
+            align-items: center; gap: 10px;
+            font-size: 0.88rem;
+        }
+        .past-date-banner.visible { display: flex; }
+        .past-date-banner i { font-size: 1.2rem; flex-shrink: 0; }
+
+        /* Review mode: pending becomes "Mark Late" style */
+        .btn-review {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(245,158,11,0.12);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: #f59e0b;
+            border-radius: 8px; padding: 8px 14px;
+            font-size: 0.85rem; font-weight: 600;
+            text-decoration: none; cursor: pointer;
+            transition: background 0.18s;
+        }
+        .btn-review:hover { background: rgba(245,158,11,0.22); }
+
+        /* Attendance mini-stats row for past dates */
+        .att-mini-stats {
+            display: flex; gap: 10px; margin-top: 6px;
+        }
+        .att-mini-stat {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.78rem; font-weight: 600;
+            border-radius: 8px; padding: 2px 8px;
+        }
+        .att-mini-stat.present { background: rgba(16,185,129,0.12); color: #10b981; }
+        .att-mini-stat.absent  { background: rgba(239,68,68,0.12);  color: #f87171; }
+
+        /* Section title update for non-today */
+        #sectionDayLabel { transition: color 0.2s; }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"><div class="spinner"></div></div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- Navigation -->
+    <header class="dash-navbar">
+        <div class="logo-container">
+            <div class="logo-icon"><i class='bx bx-check-double'></i></div>
+            <span class="logo-text">AttendSync</span>
+        </div>
+
+        <nav class="nav-links">
+            <a href="teacher_dashboard.html" class="nav-link active"><i class='bx bx-grid-alt'></i> Dashboard</a>
+            <a href="take_attendance.html"   class="nav-link"><i class='bx bx-check-circle'></i> Attendance</a>
+            <a href="#" class="nav-link"><i class='bx bx-file'></i> Reports</a>
+            <a href="#" class="nav-link"><i class='bx bx-bell'></i> Alerts</a>
+            <a href="teacher_profile.html" class="nav-link"><i class='bx bx-user'></i> Profile</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="notification-bell">
+                <i class='bx bx-bell'></i>
+                <div class="notification-badge" id="notifBadge" style="display:none">0</div>
+            </div>
+            <div class="user-profile-nav">
+                <img id="navAvatar" src="https://ui-avatars.com/api/?name=Teacher&background=0D8ABC&color=fff" alt="Profile" class="user-avatar">
+                <div class="user-info-nav">
+                    <span class="user-name" id="navName">Loading…</span>
+                    <span class="user-role" id="navRole">Teacher</span>
+                </div>
+            </div>
+            <a href="index.html" class="logout-btn" id="logoutBtn" title="Logout">
+                <i class='bx bx-log-out'></i> Logout
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner" style="display:none">
+            <i class='bx bx-error-circle' style="font-size:1.3rem"></i>
+            <span id="errorText">Could not load data.</span>
+        </div>
+
+        <!-- Past Date Banner -->
+        <div class="past-date-banner" id="pastDateBanner">
+            <i class='bx bx-history'></i>
+            <span id="pastDateText">Viewing a past date — attendance is read-only.</span>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title">
+                <div class="greeting-pill" id="greetingPill">
+                    <i class='bx bx-sun'></i>
+                    <span id="greetingTime">Good morning</span>
+                </div>
+                <h1 id="greetingName">Good morning, Teacher <span style="font-size:1.5rem">👋</span></h1>
+                <p class="page-subtitle" id="pageSubtitle">Loading your schedule…</p>
+            </div>
+
+            <!-- ── Date Navigation ── -->
+            <div class="date-nav-group" id="dateNavGroup">
+                <!-- Prev day -->
+                <button class="date-nav-btn" id="prevDayBtn" title="Previous day" aria-label="Previous day">
+                    <i class='bx bx-chevron-left'></i>
+                </button>
+
+                <!-- Date selector pill (native date input underneath) -->
+                <button class="date-selector" id="dateDisplay" aria-label="Choose date">
+                    <i class='bx bx-calendar'></i>
+                    <span id="todayDate">—</span>
+                    <!-- Native date input overlaid invisibly -->
+                    <input type="date" class="date-input-hidden" id="datePickerInput"
+                           max="" title="Pick a date" aria-label="Date picker">
+                </button>
+
+                <!-- "Today" quick-jump badge -->
+                <span class="today-badge" id="todayBadge" title="Jump to today">Today</span>
+
+                <!-- Next day -->
+                <button class="date-nav-btn" id="nextDayBtn" title="Next day" aria-label="Next day">
+                    <i class='bx bx-chevron-right'></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Total Classes</span>
+                    <i class='bx bx-book-open'></i>
+                </div>
+                <div class="summary-card-value" id="statTotal">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Completed</span>
+                    <i class='bx bx-check-circle' style="color:var(--status-safe)"></i>
+                </div>
+                <div class="summary-card-value success" id="statCompleted">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Pending</span>
+                    <i class='bx bx-time-five'></i>
+                </div>
+                <div class="summary-card-value" id="statPending">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <span>Avg. Attendance</span>
+                    <i class='bx bx-trending-up'></i>
+                </div>
+                <div class="summary-card-value" id="statAvg">—</div>
+            </div>
+        </div>
+
+        <!-- Classes Section -->
+        <div class="section-header">
+            <h2 class="section-title" id="sectionDayLabel">Classes</h2>
+            <span class="section-meta" id="classCount">Loading…</span>
+        </div>
+
+        <div class="list-container" id="classList">
+            <div class="sk-card skeleton"></div>
+            <div class="sk-card skeleton"></div>
+            <div class="sk-card skeleton"></div>
+        </div>
+
+    </main>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+//  AttendSync – Teacher Dashboard  (with date navigation)
+// ══════════════════════════════════════════════════════════════════════
+
+const API_URL  = 'teacher_api.php';
+const TODAY_ISO = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+})();
+
+// Current date being viewed (ISO string YYYY-MM-DD)
+let currentDate  = TODAY_ISO;
+let teacherCache = null;  // cached teacher info after first load
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function isoToDisplay(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+}
+function dayLabel(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { weekday:'long' });
+}
+function shiftDate(iso, days) {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + days);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return { text: 'Good morning',   icon: 'bx-sun'  };
+    if (h < 17) return { text: 'Good afternoon',  icon: 'bx-sun'  };
+    return           { text: 'Good evening',     icon: 'bx-moon' };
+}
+function avatarUrl(name) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&bold=true`;
+}
+function showToast(msg, dur = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), dur);
+}
+function showError(msg) {
+    const el = document.getElementById('errorBanner');
+    document.getElementById('errorText').textContent = msg;
+    el.style.display = 'flex';
+}
+function typeBadge(type) {
+    const cls = 'type-' + type.toLowerCase().replace(/\s/g,'');
+    return `<span class="type-badge ${cls}">${type}</span>`;
+}
+
+// ── Date navigation UI ────────────────────────────────────────────────
+function updateDateUI(iso, isPast) {
+    const displayBtn  = document.getElementById('dateDisplay');
+    const todayBadge  = document.getElementById('todayBadge');
+    const nextBtn     = document.getElementById('nextDayBtn');
+    const dateInput   = document.getElementById('datePickerInput');
+    const pastBanner  = document.getElementById('pastDateBanner');
+    const pastText    = document.getElementById('pastDateText');
+
+    document.getElementById('todayDate').textContent = isoToDisplay(iso);
+    dateInput.value = iso;
+    dateInput.max   = TODAY_ISO; // cannot go into future
+
+    const isToday = iso === TODAY_ISO;
+
+    // Style the date button
+    displayBtn.classList.toggle('is-past', isPast && !isToday);
+
+    // Show/hide "Today" badge
+    todayBadge.classList.toggle('visible', !isToday);
+
+    // Disable next if already on today or future
+    nextBtn.disabled = iso >= TODAY_ISO;
+
+    // Past date banner
+    if (isPast && !isToday) {
+        const dayName = dayLabel(iso);
+        pastText.innerHTML = `<strong><i class='bx bx-history' style='margin-right:4px'></i>Viewing ${dayName}, ${isoToDisplay(iso)}</strong> — Classes shown are from the timetable; attendance marked for this date.`;
+        pastBanner.classList.add('visible');
+    } else {
+        pastBanner.classList.remove('visible');
+    }
+
+    // Update section heading
+    document.getElementById('sectionDayLabel').textContent =
+        isToday ? "Today's Classes" : `${dayLabel(iso)}'s Classes`;
+}
+
+// ── Render a class card ───────────────────────────────────────────────
+function renderClassCard(cls, isPast, isToday) {
+    const isBreakOrExtra = ['Break','Mentoring','Activity'].includes(cls.type);
+
+    let actionHTML = '';
+    if (isBreakOrExtra) {
+        actionHTML = `<span style="color:var(--text-muted);font-size:0.85rem">${cls.type}</span>`;
+    } else if (cls.is_completed) {
+        actionHTML = `
+            <div>
+                <div class="badge-success"><i class='bx bx-check-circle'></i> Completed</div>
+                ${isPast && !isToday ? `
+                <div class="att-mini-stats" style="margin-top:6px;justify-content:flex-end">
+                    <span class="att-mini-stat present"><i class='bx bx-user-check'></i> Marked</span>
+                </div>` : ''}
+            </div>`;
+    } else if (isPast && !isToday) {
+        // Past date, attendance not marked
+        actionHTML = `
+            <a href="take_attendance.html?subject_id=${cls.subject_id}&subject=${encodeURIComponent(cls.subject_name)}&sem=${cls.semester}&entry=${cls.id}&date=${currentDate}"
+               class="btn-review">
+                <i class='bx bx-edit'></i> Mark Past
+            </a>`;
+    } else {
+        // Today / future — normal Take Attendance
+        actionHTML = `
+            <a href="take_attendance.html?subject_id=${cls.subject_id}&subject=${encodeURIComponent(cls.subject_name)}&sem=${cls.semester}&entry=${cls.id}&date=${currentDate}"
+               class="btn-dark">
+                <i class='bx bx-list-check'></i> Take Attendance
+            </a>`;
+    }
+
+    const studentHTML = (!isBreakOrExtra && cls.student_count > 0) ? `
+        <div class="student-count">
+            <strong>${cls.student_count}</strong>
+            <span>Students</span>
+        </div>` : '';
+
+    return `
+    <div class="list-item" id="entry-${cls.id}">
+        <div class="list-item-left">
+            <div class="item-icon"><i class='bx ${cls.icon}'></i></div>
+            <div class="item-details">
+                <h3>${cls.title} ${typeBadge(cls.type)}</h3>
+                <div class="item-meta">
+                    <span class="meta-item"><i class='bx bx-time'></i> ${cls.time_range}</span>
+                    <span class="meta-item"><i class='bx bx-group'></i> ${cls.department} • Sem ${cls.semester}</span>
+                    ${cls.semester_name ? `<span class="meta-item"><i class='bx bx-book'></i> ${cls.semester_name}</span>` : ''}
+                </div>
+            </div>
+        </div>
+        <div class="list-item-right">
+            ${studentHTML}
+            ${actionHTML}
+        </div>
+    </div>`;
+}
+
+// ── Populate dashboard from API response ──────────────────────────────
+function populateDashboard(data) {
+    const { teacher, day_of_week, today_date, summary, classes, is_today, is_past, requested_date } = data;
+    const greeting = getGreeting();
+
+    // ---- Nav bar (only first time) ----
+    if (!teacherCache) {
+        teacherCache = teacher;
+        document.getElementById('navName').textContent = teacher.name;
+        document.getElementById('navRole').textContent  = teacher.is_hod ? 'Head of Department' : 'Teacher';
+        document.getElementById('navAvatar').src        = avatarUrl(teacher.name);
+        try {
+            sessionStorage.setItem('teacher', JSON.stringify({ id: teacher.teacher_id, name: teacher.name, dept: teacher.department_id }));
+        } catch(_) {}
+    }
+
+    // ---- Greeting ----
+    document.getElementById('greetingTime').textContent = greeting.text;
+    document.querySelector('#greetingPill i').className = `bx ${greeting.icon}`;
+    document.getElementById('greetingName').innerHTML   =
+        `${greeting.text}, ${teacher.name.split(' ')[0]} <span style="font-size:1.5rem">👋</span>`;
+
+    const verb = is_today ? 'scheduled for' : 'on';
+    document.getElementById('pageSubtitle').textContent =
+        `Here are your classes ${verb} ${day_of_week}, ${today_date}`;
+
+    // ---- Date UI ----
+    updateDateUI(requested_date, is_past);
+
+    // ---- Summary cards ----
+    document.getElementById('statTotal').textContent     = summary.total_classes;
+    document.getElementById('statCompleted').textContent = summary.completed;
+    document.getElementById('statPending').textContent   = summary.pending;
+    document.getElementById('statAvg').textContent       = summary.avg_attendance;
+
+    // ---- Class list ----
+    const listEl = document.getElementById('classList');
+    const count  = classes.length;
+    const dayWord = is_today ? 'today' : day_of_week;
+    document.getElementById('classCount').textContent =
+        count === 0 ? `No classes ${is_today ? 'today' : 'this day'}` : `${count} scheduled`;
+
+    if (count === 0) {
+        listEl.innerHTML = `
+            <div class="no-classes">
+                <i class='bx bx-calendar-x'></i>
+                <p>No classes scheduled for <strong>${day_of_week}</strong>.</p>
+            </div>`;
+    } else {
+        listEl.innerHTML = classes.map(c => renderClassCard(c, is_past, is_today)).join('');
+    }
+}
+
+// ── Fetch data for a given date ───────────────────────────────────────
+async function loadDashboard(date = TODAY_ISO, showSpinner = true) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (showSpinner) {
+        overlay.style.display = 'flex';
+        overlay.classList.remove('hidden');
+    }
+
+    // Show skeleton while refreshing (not on first load overlay)
+    if (!showSpinner) {
+        document.getElementById('classList').innerHTML =
+            `<div class="sk-card skeleton"></div><div class="sk-card skeleton"></div><div class="sk-card skeleton"></div>`;
+    }
+
+    try {
+        // Build URL
+        let url = `${API_URL}?date=${date}`;
+        const stored = sessionStorage.getItem('teacher');
+        if (stored) {
+            const t = JSON.parse(stored);
+            if (t.id) url += `&teacher_id=${t.id}`;
+        }
+
+        let res  = await fetch(url, { credentials: 'include' });
+        let data = await res.json();
+
+        if (!data.success) {
+            // Demo fallback: try teacher_id=1
+            if (data.message && data.message.includes('authenticated')) {
+                res  = await fetch(`${API_URL}?teacher_id=1&date=${date}`, { credentials: 'include' });
+                data = await res.json();
+                if (data.success) {
+                    populateDashboard(data);
+                    if (date === TODAY_ISO) showToast('Demo mode — showing ' + data.teacher.name);
+                } else {
+                    showError('Please login. ' + (data.message || ''));
+                }
+            } else {
+                showError(data.message || 'Failed to load dashboard.');
+            }
+            return;
+        }
+
+        populateDashboard(data);
+
+    } catch (err) {
+        console.error(err);
+        showError('Cannot connect to server. Make sure XAMPP / Apache is running.');
+    } finally {
+        overlay.classList.add('hidden');
+        setTimeout(() => overlay.style.display = 'none', 400);
+    }
+}
+
+// ── Date navigation events ────────────────────────────────────────────
+
+// Native date input change
+document.getElementById('datePickerInput').addEventListener('change', function() {
+    const val = this.value;
+    if (!val) return;
+    if (val > TODAY_ISO) { this.value = TODAY_ISO; return; } // block future
+    currentDate = val;
+    loadDashboard(currentDate, false);
+});
+
+// Prev day button
+document.getElementById('prevDayBtn').addEventListener('click', () => {
+    currentDate = shiftDate(currentDate, -1);
+    loadDashboard(currentDate, false);
+});
+
+// Next day button
+document.getElementById('nextDayBtn').addEventListener('click', () => {
+    if (currentDate >= TODAY_ISO) return;
+    currentDate = shiftDate(currentDate, 1);
+    loadDashboard(currentDate, false);
+});
+
+// "Today" badge click
+document.getElementById('todayBadge').addEventListener('click', () => {
+    currentDate = TODAY_ISO;
+    loadDashboard(currentDate, false);
+    showToast('Jumped to today');
+});
+
+// Keyboard left/right on date area
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') {
+        currentDate = shiftDate(currentDate, -1);
+        loadDashboard(currentDate, false);
+    } else if (e.key === 'ArrowRight' && currentDate < TODAY_ISO) {
+        currentDate = shiftDate(currentDate, 1);
+        loadDashboard(currentDate, false);
+    }
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.clear();
+    localStorage.removeItem('teacher');
+});
+
+// ── Init ──────────────────────────────────────────────────────────────
+loadDashboard(TODAY_ISO, true);
+</script>
+
+</body>
+</html>

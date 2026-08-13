@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendSync - Take Attendance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script>
+        let subjectId = 1; // Default
+        let targetDate = new Date().toISOString().split('T')[0]; // Default today
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('subject_id')) {
+                subjectId = urlParams.get('subject_id');
+            }
+            if (urlParams.has('date')) {
+                targetDate = urlParams.get('date');
+            }
+            
+            fetchStudents();
+        });
+
+        async function fetchStudents() {
+            try {
+                const response = await fetch(`take_attendance_api.php?subject_id=${subjectId}&date=${targetDate}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('display-subject-name').innerText = data.subject_name;
+                    document.getElementById('display-date').innerText = new Date(data.date).toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                    
+                    const tbody = document.getElementById('student-list');
+                    tbody.innerHTML = '';
+                    
+                    let enrolledCount = 0;
+                    
+                    data.students.forEach(student => {
+                        enrolledCount++;
+                        const tr = document.createElement('tr');
+                        tr.dataset.studentId = student.student_id;
+                        
+                        const isPresent = student.status === 'Present';
+                        const isAbsent = student.status === 'Absent';
+                        
+                        tr.innerHTML = `
+                            <td><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.student_name)}&background=random" alt="Photo" class="student-avatar"></td>
+                            <td class="student-name">${student.student_name}</td>
+                            <td class="roll-no">${student.roll_no}</td>
+                            <td align="right">
+                                <div class="attendance-toggles" style="justify-content: flex-end;">
+                                    <button class="toggle-btn present ${isPresent ? 'active' : ''}" onclick="toggleStatus(this, 'Present')"><i class='bx bx-check'></i> Present</button>
+                                    <button class="toggle-btn absent ${isAbsent ? 'active' : ''}" onclick="toggleStatus(this, 'Absent')"><i class='bx bx-x'></i> Absent</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    document.getElementById('enrolled-count').innerText = enrolledCount + ' students enrolled';
+                    document.getElementById('total-count').innerText = enrolledCount;
+                    
+                    updateCounts();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+
+        function toggleStatus(btn, status) {
+            const group = btn.closest('.attendance-toggles');
+            const presentBtn = group.querySelector('.present');
+            const absentBtn = group.querySelector('.absent');
+            
+            if (status === 'Present') {
+                presentBtn.classList.add('active');
+                absentBtn.classList.remove('active');
+            } else {
+                absentBtn.classList.add('active');
+                presentBtn.classList.remove('active');
+            }
+            updateCounts();
+        }
+
+        function updateCounts() {
+            const presents = document.querySelectorAll('.toggle-btn.present.active').length;
+            const absents = document.querySelectorAll('.toggle-btn.absent.active').length;
+            const total = document.querySelectorAll('#student-list tr').length;
+            const unmarked = total - (presents + absents);
+            
+            document.getElementById('count-present').innerText = presents;
+            document.getElementById('count-absent').innerText = absents;
+            document.getElementById('count-unmarked').innerText = unmarked;
+        }
+        
+        async function submitAttendance() {
+            const rows = document.querySelectorAll('#student-list tr');
+            const attendance = [];
+            
+            rows.forEach(row => {
+                const studentId = row.dataset.studentId;
+                let status = 'Unmarked';
+                if (row.querySelector('.present.active')) status = 'Present';
+                if (row.querySelector('.absent.active')) status = 'Absent';
+                
+                attendance.push({ student_id: studentId, status: status });
+            });
+            
+            const payload = {
+                subject_id: subjectId,
+                date: targetDate,
+                attendance: attendance
+            };
+            
+            try {
+                const response = await fetch('submit_attendance_api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Attendance Submitted Successfully!');
+                    window.location.href = 'teacher_dashboard.html';
+                } else {
+                    alert('Error submitting attendance: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                alert('Error submitting attendance');
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="dash-navbar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class='bx bx-check-double'></i>
+            </div>
+            <span class="logo-text">AttendSync</span>
+        </div>
+        
+        <nav class="nav-links">
+            <a href="teacher_dashboard.html" class="nav-link"><i class='bx bx-grid-alt'></i> Dashboard</a>
+            <a href="take_attendance.html" class="nav-link active"><i class='bx bx-check-circle'></i> Attendance</a>
+            <a href="#" class="nav-link"><i class='bx bx-file'></i> Reports</a>
+            <a href="#" class="nav-link"><i class='bx bx-bell'></i> Alerts</a>
+            <a href="teacher_profile.html" class="nav-link"><i class='bx bx-user'></i> Profile</a>
+        </nav>
+
+        <div class="nav-right">
+            <div class="notification-bell">
+                <i class='bx bx-bell'></i>
+                <div class="notification-badge">3</div>
+            </div>
+            <div class="user-profile-nav">
+                <img src="https://ui-avatars.com/api/?name=Anita+Rao&background=0D8ABC&color=fff" alt="Profile" class="user-avatar">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="attendance-header">
+                <div class="page-title">
+                    <h1><span id="display-subject-name">Loading...</span> <span class="course-code" id="display-course-code"></span></h1>
+                </div>
+                <div class="attendance-meta">
+                    <span class="meta-item"><i class='bx bx-calendar'></i> <span id="display-date">Loading...</span></span>
+                    <span class="meta-item"><i class='bx bx-book'></i> BCA Department</span>
+                </div>
+            </div>
+            <button class="filter-selector">
+                CSE • Section A <i class='bx bx-chevron-down'></i>
+            </button>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="search-header">
+            <div class="search-container">
+                <i class='bx bx-search'></i>
+                <input type="text" class="search-bar" placeholder="Search by name or roll number...">
+            </div>
+            <div class="section-meta" style="color: var(--dash-text-muted);">
+                <i class='bx bx-group'></i> <span id="enrolled-count">Loading students...</span>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Student Name</th>
+                    <th>Roll No.</th>
+                    <th style="text-align: right;">Attendance</th>
+                </tr>
+            </thead>
+            <tbody id="student-list">
+                <!-- Students will be dynamically loaded here -->
+            </tbody>
+        </table>
+    </main>
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+        <div class="footer-stats">
+            <div class="stat-item">
+                <div class="stat-icon total"><i class='bx bx-group'></i></div>
+                <div class="stat-info">
+                    <strong id="total-count">0</strong>
+                    <span>Total Students</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon present"><i class='bx bx-check-circle'></i></div>
+                <div class="stat-info">
+                    <strong id="count-present" style="color: var(--status-safe);">7</strong>
+                    <span>Present</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon absent"><i class='bx bx-x-circle'></i></div>
+                <div class="stat-info">
+                    <strong id="count-absent" style="color: var(--status-critical);">0</strong>
+                    <span>Absent</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon unmarked"><i class='bx bx-help-circle'></i></div>
+                <div class="stat-info">
+                    <strong id="count-unmarked">1</strong>
+                    <span>Unmarked</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-actions">
+            <a href="teacher_dashboard.html" class="btn-outline">Cancel</a>
+            <button class="btn-dark" onclick="submitAttendance()">
+                <i class='bx bx-send'></i> Submit Attendance
+            </button>
+        </div>
+    </div>
+</body>
+</html>

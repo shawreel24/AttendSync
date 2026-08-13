@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendSync - Login</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation -->
+    <header class="navbar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class='bx bx-check-double'></i>
+            </div>
+            <span class="logo-text">AttendSync</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#" class="nav-link active"><i class='bx bx-grid-alt'></i> Dashboard</a>
+            <a href="#" class="nav-link"><i class='bx bx-check-circle'></i> Attendance</a>
+            <a href="#" class="nav-link"><i class='bx bx-file'></i> Reports</a>
+            <a href="#" class="nav-link"><i class='bx bx-bell'></i> Alerts</a>
+            <a href="#" class="nav-link"><i class='bx bx-user'></i> Profile</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="login-container">
+        <div class="login-card">
+            <!-- Left Side Image and Marketing Text -->
+            <div class="login-image-side">
+                <div class="image-overlay"></div>
+                <div class="top-icon">
+                    <i class='bx bx-devices'></i>
+                </div>
+                <div class="marketing-content">
+                    <div class="feature-item">
+                        <div class="check-icon"><i class='bx bx-check'></i></div>
+                        <span>Mark attendance in seconds</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="check-icon"><i class='bx bx-check'></i></div>
+                        <span>Real-time analytics & alerts</span>
+                    </div>
+                    <h2 class="marketing-title">Real-time Attendance. Smarter Classrooms.</h2>
+                </div>
+            </div>
+
+            <!-- Right Side Login Form -->
+            <div class="login-form-side">
+                <div class="form-header">
+                    <div class="logo-container-large">
+                        <div class="logo-icon-large">
+                            <i class='bx bx-check-double'></i>
+                        </div>
+                        <span class="logo-text-large">AttendSync</span>
+                    </div>
+                    <p class="subtitle">Real-time Attendance. Smarter Classrooms.</p>
+                </div>
+
+                <!-- Role Toggle -->
+                <div class="role-toggle">
+                    <button class="role-btn active" data-role="Teacher">Teacher</button>
+                    <button class="role-btn" data-role="Student">Student</button>
+                    <button class="role-btn" data-role="Admin">Admin</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="email" id="emailLabel">Username</label>
+                        <div class="input-wrapper">
+                            <i class='bx bx-user input-icon'></i>
+                            <input type="text" id="email" placeholder="e.g. allex@hatim.local" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="password-header">
+                            <label for="password">Password</label>
+                            <a href="#" class="forgot-password">Forgot Password?</a>
+                        </div>
+                        <div class="input-wrapper">
+                            <i class='bx bx-lock-alt input-icon'></i>
+                            <input type="password" id="password" placeholder="Enter your password" required>
+                            <i class='bx bx-show toggle-password' id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="keepSignedIn">
+                        <label for="keepSignedIn">Keep me signed in</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class='bx bx-log-in-circle'></i> Login as Teacher
+                    </button>
+
+                    <div class="switch-login">
+                        <a href="signup.html" id="createAccountText">Create an account</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

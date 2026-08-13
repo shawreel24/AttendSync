@@ -1,0 +1,448 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #1a1a1a;
+    --text-color: #333333;
+    --text-light: #666666;
+    --bg-color: #f7f8fa;
+    --border-color: #e5e7eb;
+    --card-bg: #ffffff;
+    --accent-color: #00b074;
+    --accent-hover: #009965;
+    --toggle-bg: #f3f4f6;
+    --focus-ring: rgba(0, 176, 116, 0.2);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--primary-color);
+}
+
+a {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-icon {
+    background-color: var(--primary-color);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.logo-text {
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    font-weight: 500;
+    transition: color 0.2s ease;
+    padding-bottom: 0.25rem;
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.nav-link i {
+    font-size: 1.1rem;
+}
+
+/* Main Container */
+.login-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+}
+
+.login-card {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 750px;
+    background-color: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-top: max(1rem, 4vh);
+}
+
+/* Left Side Image */
+.login-image-side {
+    flex: 1;
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: white;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%);
+    z-index: 1;
+}
+
+.top-icon,
+.marketing-content {
+    position: relative;
+    z-index: 2;
+}
+
+.top-icon {
+    width: 48px;
+    height: 48px;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.marketing-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+/* Right Side Form */
+.login-form-side {
+    flex: 1;
+    padding: 2rem 5rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Allow scrolling if the form gets too tall */
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.logo-container-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.logo-icon-large {
+    background-color: var(--primary-color);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.logo-text-large {
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* Role Toggle */
+.role-toggle {
+    display: flex;
+    background-color: var(--toggle-bg);
+    border-radius: 12px;
+    padding: 0.35rem;
+    margin-bottom: 2rem;
+}
+
+.role-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.role-btn.active {
+    background-color: white;
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.password-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.forgot-password {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgot-password:hover {
+    color: var(--primary-color);
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-light);
+    font-size: 1.2rem;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    outline: none;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+input::placeholder {
+    color: #a0aec0;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: color 0.2s;
+}
+
+.toggle-password:hover {
+    color: var(--primary-color);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, transform 0.1s;
+    font-family: inherit;
+}
+
+.submit-btn:hover {
+    background-color: #333333;
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.switch-login {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+#switchLoginText {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-light);
+    transition: color 0.2s;
+}
+
+#switchLoginText:hover {
+    color: var(--primary-color);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .login-form-side {
+        padding: 3rem;
+    }
+}
+
+@media (max-width: 860px) {
+    .login-card {
+        flex-direction: column;
+    }
+
+    .login-image-side {
+        min-height: 250px;
+        padding: 2rem;
+    }
+
+    .marketing-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .nav-links {
+        display: none;
+    }
+}
