@@ -1,14 +1,15 @@
 <?php
 // db.php
 // Database configuration
-$host = 'localhost';
-$db_name = 'attendsync';
-$username = 'root'; // Change this if your database username is different
-$password = ''; // Change this if your database has a password
+$host = getenv('MYSQLHOST') ?: 'localhost';
+$db_name = getenv('MYSQLDATABASE') ?: 'attendsync';
+$username = getenv('MYSQLUSER') ?: 'root';
+$password = getenv('MYSQLPASSWORD') ?: '';
+$port = getenv('MYSQLPORT') ?: '3306';
 
 try {
     // Create a new PDO instance
-    $pdo = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8", $username, $password);
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$db_name;charset=utf8", $username, $password);
     
     // Set PDO error mode to exception for better error handling
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
